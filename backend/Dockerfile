@@ -5,6 +5,5 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
-RUN chmod +x start.sh
 
-CMD ["/bin/bash", "start.sh"]
+CMD ["python", "main_start.py"]
