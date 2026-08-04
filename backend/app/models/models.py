@@ -1,7 +1,7 @@
 from datetime import date, datetime, timezone
 from sqlalchemy import (
     Column, Integer, String, Numeric, Date, DateTime,
-    ForeignKey, Text, Enum as SAEnum
+    ForeignKey, Text, Enum as SAEnum, Boolean
 )
 from sqlalchemy.orm import relationship
 import enum
@@ -26,15 +26,32 @@ class StatusEnum(str, enum.Enum):
     inactive = "inactive"
     pending = "pending"
 
+class RoleEnum(str, enum.Enum):
+    admin = "admin"
+    editor = "editor"
+    viewer = "viewer"
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String(255), unique=True, index=True, nullable=False)
     name = Column(String(255), nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(String(50), default="viewer")  # admin, editor, viewer
+    role = Column(String(50), default="viewer")
+    is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     software = relationship("Software", back_populates="owner_user")
+
+class InviteToken(Base):
+    __tablename__ = "invite_tokens"
+    id = Column(Integer, primary_key=True, index=True)
+    token = Column(String(255), unique=True, nullable=False, index=True)
+    email = Column(String(255), nullable=False)
+    role = Column(String(50), default="viewer")
+    invited_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=False)
 
 class Software(Base):
     __tablename__ = "software"
@@ -46,10 +63,10 @@ class Software(Base):
     status = Column(SAEnum(StatusEnum), default=StatusEnum.active)
     annual_cost = Column(Numeric(12, 2), nullable=False, default=0)
     seats = Column(Integer, default=0)
-    utilisation = Column(Integer, default=0)  # percentage 0-100
+    utilisation = Column(Integer, default=0)
     renewal_date = Column(Date, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    owner_label = Column(String(255))          # free-text owner (team name)
+    owner_label = Column(String(255))
     notes = Column(Text)
     contract_url = Column(String(1024))
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -63,7 +80,7 @@ class RenewalHistory(Base):
     __tablename__ = "renewal_history"
     id = Column(Integer, primary_key=True, index=True)
     software_id = Column(Integer, ForeignKey("software.id"), nullable=False)
-    action = Column(String(100), nullable=False)   # renewed, cancelled, renegotiated, noted
+    action = Column(String(100), nullable=False)
     previous_cost = Column(Numeric(12, 2))
     new_cost = Column(Numeric(12, 2))
     previous_renewal_date = Column(Date)

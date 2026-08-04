@@ -18,9 +18,16 @@ def get_current_user(
     user = db.query(User).filter(User.id == int(user_id)).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
     return user
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
     if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user
+
+def require_editor_or_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role not in ["admin", "editor"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Editor or admin access required")
     return current_user

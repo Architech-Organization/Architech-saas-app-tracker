@@ -7,15 +7,16 @@ import Dashboard from './pages/Dashboard'
 import SoftwareList from './pages/SoftwareList'
 import Renewals from './pages/Renewals'
 import Spend from './pages/Spend'
+import Users from './pages/Users'
+import Profile from './pages/Profile'
 
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } })
 
-const Stub = ({ title }) => <div style={{ padding: '28px 32px', color: '#6b6b8a', fontSize: 14 }}><h1 style={{ fontSize: 20, fontWeight: 600, color: '#fff', marginBottom: 8 }}>{title}</h1>Coming soon.</div>
-
-function Protected({ children }) {
+function Protected({ children, adminOnly }) {
   const { user, loading } = useAuth()
   if (loading) return <div style={{ padding: 40, color: '#6b6b8a', fontFamily: 'system-ui' }}>Loading…</div>
   if (!user) return <Navigate to="/login" replace />
+  if (adminOnly && user.role !== 'admin') return <Navigate to="/" replace />
   return children
 }
 
@@ -26,15 +27,14 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Login />} />
             <Route path="/" element={<Protected><Layout /></Protected>}>
               <Route index element={<Dashboard />} />
               <Route path="software" element={<SoftwareList />} />
               <Route path="renewals" element={<Renewals />} />
               <Route path="spend" element={<Spend />} />
-              <Route path="users" element={<Stub title="Users" />} />
-              <Route path="notifications" element={<Stub title="Notifications" />} />
-              <Route path="audit" element={<Stub title="Audit Log" />} />
-              <Route path="profile" element={<Stub title="My Profile" />} />
+              <Route path="users" element={<Protected adminOnly><Users /></Protected>} />
+              <Route path="profile" element={<Profile />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -28,7 +28,7 @@ function RenewalRow({ sw }) {
   const urgent = d <= 7
   return (
     <div style={sc.renewalRow}>
-      <div style={{ ...sc.dBadge, background: urgent ? 'rgba(239,68,68,0.15)' : 'transparent', color: urgent ? '#f87171' : '#a78bfa', border: `1px solid ${urgent ? 'rgba(239,68,68,0.3)' : 'rgba(124,92,252,0.3)'}` }}>
+      <div style={{ ...sc.dBadge, background: urgent ? 'rgba(239,68,68,0.15)', color: urgent ? '#f87171' : '#a78bfa', border: `1px solid ${urgent ? 'rgba(239,68,68,0.3)' : 'rgba(124,92,252,0.3)'}` }}>
         <span style={{ fontSize: 10, fontWeight: 700 }}>{d}d</span>
       </div>
       <div style={{ flex: 1 }}>
