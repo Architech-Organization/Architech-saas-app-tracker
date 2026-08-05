@@ -26,6 +26,10 @@ class StatusEnum(str, enum.Enum):
     inactive = "inactive"
     pending = "pending"
 
+class CurrencyEnum(str, enum.Enum):
+    cad = "CAD"
+    usd = "USD"
+
 class RoleEnum(str, enum.Enum):
     admin = "admin"
     editor = "editor"
@@ -62,6 +66,7 @@ class Software(Base):
     billing_cycle = Column(SAEnum(BillingEnum), default=BillingEnum.annual)
     status = Column(SAEnum(StatusEnum), default=StatusEnum.active)
     annual_cost = Column(Numeric(12, 2), nullable=False, default=0)
+    currency = Column(String(10), default="CAD")
     seats = Column(Integer, default=0)
     utilisation = Column(Integer, default=0)
     renewal_date = Column(Date, nullable=False)

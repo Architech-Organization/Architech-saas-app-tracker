@@ -4,7 +4,6 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 from app.models.models import CategoryEnum, BillingEnum, StatusEnum
 
-# ── Auth ──────────────────────────────────────────────────────────────────────
 class UserCreate(BaseModel):
     email: EmailStr
     name: str
@@ -32,7 +31,6 @@ class LoginRequest(BaseModel):
 class RefreshRequest(BaseModel):
     refresh_token: str
 
-# ── Software ───────────────────────────────────────────────────────────────────
 class SoftwareCreate(BaseModel):
     name: str
     vendor: str
@@ -40,6 +38,7 @@ class SoftwareCreate(BaseModel):
     billing_cycle: BillingEnum = BillingEnum.annual
     status: StatusEnum = StatusEnum.active
     annual_cost: Decimal
+    currency: str = "CAD"
     seats: int = 0
     utilisation: int = 0
     renewal_date: date
@@ -54,6 +53,7 @@ class SoftwareUpdate(BaseModel):
     billing_cycle: Optional[BillingEnum] = None
     status: Optional[StatusEnum] = None
     annual_cost: Optional[Decimal] = None
+    currency: Optional[str] = None
     seats: Optional[int] = None
     utilisation: Optional[int] = None
     renewal_date: Optional[date] = None
@@ -80,6 +80,7 @@ class SoftwareOut(BaseModel):
     billing_cycle: BillingEnum
     status: StatusEnum
     annual_cost: Decimal
+    currency: str
     seats: int
     utilisation: int
     renewal_date: date
@@ -91,14 +92,12 @@ class SoftwareOut(BaseModel):
     renewal_history: List[RenewalHistoryOut] = []
     model_config = {"from_attributes": True}
 
-# ── Renewal action ─────────────────────────────────────────────────────────────
 class RenewalActionCreate(BaseModel):
-    action: str  # renewed | cancelled | renegotiated | noted
+    action: str
     new_cost: Optional[Decimal] = None
     new_renewal_date: Optional[date] = None
     note: Optional[str] = None
 
-# ── Dashboard ──────────────────────────────────────────────────────────────────
 class DashboardStats(BaseModel):
     total_software: int
     total_annual_spend: Decimal
