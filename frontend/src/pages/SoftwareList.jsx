@@ -2,7 +2,24 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { softwareApi } from '../services/api'
 import { differenceInDays, parseISO, format } from 'date-fns'
-import { Plus, Search, Pencil, Trash2, RefreshCw, X } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, RefreshCw, X, Download } from 'lucide-react'
+
+const exportCSV = (software) => {
+  const headers = ['Name', 'Vendor', 'Category', 'Billing', 'Annual Cost', 'Currency', 'Seats', 'Utilisation %', 'Owner', 'Renewal Date', 'Status', 'Notes']
+  const rows = software.map(sw => [
+    sw.name, sw.vendor, sw.category, sw.billing_cycle,
+    sw.annual_cost, sw.currency || 'CAD', sw.seats, sw.utilisation,
+    sw.owner_label || '', sw.renewal_date, sw.status, (sw.notes || '').replace(/,/g, ';')
+  ])
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `licenses-${new Date().toISOString().slice(0,10)}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 const CATEGORIES = ['Development', 'Operations', 'Sales', 'HR', 'Security', 'Collaboration', 'Other']
 const BILLING = ['Annual', 'Monthly', 'One-time']
@@ -81,7 +98,10 @@ export default function SoftwareList() {
           <h1 style={s.title}>All Licenses</h1>
           <p style={s.subtitle}>{software.length} software tracked</p>
         </div>
-        <button style={s.btnPrimary} onClick={openAdd}><Plus size={14} /> Add License</button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button style={s.btnSecondary} onClick={() => exportCSV(software)}><Download size={13} /> Export CSV</button>
+          <button style={s.btnPrimary} onClick={openAdd}><Plus size={14} /> Add License</button>
+        </div>
       </div>
 
       <div style={s.filterBar}>
