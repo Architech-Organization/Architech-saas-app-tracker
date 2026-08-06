@@ -10,6 +10,7 @@ import Spend from './pages/Spend'
 import Users from './pages/Users'
 import Profile from './pages/Profile'
 import AuditLog from './pages/AuditLog'
+import Notifications from './pages/Notifications'
 
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } })
 
@@ -35,6 +36,7 @@ export default function App() {
               <Route path="renewals" element={<Renewals />} />
               <Route path="spend" element={<Spend />} />
               <Route path="users" element={<Protected adminOnly><Users /></Protected>} />
+              <Route path="notifications" element={<Protected adminOnly><Notifications /></Protected>} />
               <Route path="audit" element={<AuditLog />} />
               <Route path="profile" element={<Profile />} />
             </Route>
