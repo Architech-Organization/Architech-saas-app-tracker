@@ -8,17 +8,11 @@ export default function Login() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
   const token = params.get('token')
+  const reason = params.get('reason')
   const [mode, setMode] = useState(token ? 'invite' : 'login')
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '' })
-  const [error, setError] = useState('')
+  const [error, setError] = useState(reason === 'timeout' ? 'You were logged out due to inactivity.' : '')
   const [loading, setLoading] = useState(false)
-  const [inviteInfo, setInviteInfo] = useState(null)
-
-  useEffect(() => {
-    if (token) {
-      setMode('invite')
-    }
-  }, [token])
 
   const handle = async e => {
     e.preventDefault()
@@ -27,10 +21,10 @@ export default function Login() {
       if (mode === 'login') {
         await login(form.email, form.password)
         navigate('/')
-      } else if (mode === 'invite') {
+      } else {
         if (form.password !== form.confirm) { setError('Passwords do not match'); setLoading(false); return }
         await api.post('/users/invite/accept', { token, name: form.name, password: form.password })
-        await login(inviteInfo?.email || form.email, form.password)
+        await login(form.email || '', form.password)
         navigate('/')
       }
     } catch (err) {
@@ -55,23 +49,23 @@ export default function Login() {
 
         <form onSubmit={handle} style={s.form}>
           {mode === 'invite' && (
-            <div style={s.fieldWrap}>
+            <div style={s.field}>
               <label style={s.label}>YOUR NAME</label>
               <input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required placeholder="Full name" />
             </div>
           )}
           {mode === 'login' && (
-            <div style={s.fieldWrap}>
+            <div style={s.field}>
               <label style={s.label}>EMAIL ADDRESS</label>
               <input style={s.input} type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required placeholder="you@architech.ca" />
             </div>
           )}
-          <div style={s.fieldWrap}>
+          <div style={s.field}>
             <label style={s.label}>PASSWORD</label>
             <input style={s.input} type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} required placeholder="••••••••" />
           </div>
           {mode === 'invite' && (
-            <div style={s.fieldWrap}>
+            <div style={s.field}>
               <label style={s.label}>CONFIRM PASSWORD</label>
               <input style={s.input} type="password" value={form.confirm} onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))} required placeholder="••••••••" />
             </div>
@@ -80,24 +74,24 @@ export default function Login() {
             {loading ? 'Please wait…' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
-        {mode === 'login' && <p style={s.sub}>Contact your admin to get access.</p>}
+        <p style={s.sub}>Contact your admin to get access.</p>
       </div>
     </div>
   )
 }
 
 const s = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'radial-gradient(ellipse at 60% 40%, #1a1040 0%, #0d0d14 70%)' },
-  card: { background: '#13131f', borderRadius: 16, border: '1px solid #1e1e30', padding: '36px 32px', width: 360 },
+  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f3' },
+  card: { background: '#fff', borderRadius: 16, border: '1px solid #e0dfd8', padding: '36px 32px', width: 380, boxShadow: '0 2px 16px rgba(0,0,0,0.06)' },
   logoWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 28 },
-  logoIcon: { width: 60, height: 60, borderRadius: 14, background: 'linear-gradient(135deg, #7c5cfc, #5b8af5)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
-  appName: { fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 4 },
-  appSub: { fontSize: 13, color: '#6b6b8a', textAlign: 'center' },
-  error: { background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#f87171', marginBottom: 16 },
+  logoIcon: { width: 60, height: 60, borderRadius: 14, background: 'linear-gradient(135deg, #5b5ef4, #7c5cfc)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, boxShadow: '0 4px 12px rgba(124,92,252,0.3)' },
+  appName: { fontSize: 22, fontWeight: 700, color: '#1a1a18', marginBottom: 4 },
+  appSub: { fontSize: 13, color: '#888780', textAlign: 'center' },
+  error: { background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: '#DC2626', marginBottom: 16 },
   form: { display: 'flex', flexDirection: 'column', gap: 16 },
-  fieldWrap: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 11, fontWeight: 600, color: '#6b6b8a', letterSpacing: '0.8px' },
-  input: { padding: '11px 14px', borderRadius: 8, border: '1px solid #1e1e30', background: '#0d0d14', color: '#e2e2f0', fontSize: 14, outline: 'none', fontFamily: 'inherit' },
-  btn: { marginTop: 4, padding: '12px', borderRadius: 8, background: 'linear-gradient(135deg, #7c5cfc, #6b4ef5)', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' },
-  sub: { marginTop: 16, textAlign: 'center', fontSize: 12, color: '#4a4a6a' },
+  field: { display: 'flex', flexDirection: 'column', gap: 5 },
+  label: { fontSize: 11, fontWeight: 600, color: '#888780', letterSpacing: '0.8px' },
+  input: { padding: '10px 14px', borderRadius: 8, border: '1px solid #e0dfd8', background: '#fafaf8', color: '#1a1a18', fontSize: 14, outline: 'none', transition: 'border-color 0.15s' },
+  btn: { marginTop: 4, padding: '11px', borderRadius: 8, background: 'linear-gradient(135deg, #5b5ef4, #7c5cfc)', color: '#fff', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer' },
+  sub: { marginTop: 16, textAlign: 'center', fontSize: 12, color: '#b0afa8' },
 }
